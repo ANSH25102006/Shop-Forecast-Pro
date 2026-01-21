@@ -1,6 +1,8 @@
-import { BarChart3, Bell, Settings } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
+import NotificationsSheet from "./NotificationsSheet";
+import SettingsSheet from "./SettingsSheet";
 
 interface HeaderProps {
   activeTab?: string;
@@ -56,12 +58,8 @@ const Header = ({ activeTab }: HeaderProps) => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
-            <Settings className="h-5 w-5" />
-          </Button>
+          <NotificationsSheet />
+          <SettingsSheet />
           <div className="ml-2 h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-medium text-sm">
             JD
           </div>

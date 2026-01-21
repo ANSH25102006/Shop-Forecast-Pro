@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Store, MapPin, User, Phone, Mail, Building, FileText, Loader2, CheckCircle } from "lucide-react";
+import { Store, MapPin, User, Phone, Mail, Building, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,33 +40,42 @@ interface StoreRegistrationFormProps {
 const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrationFormProps) => {
   const [step, setStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const queryClient = useQueryClient();
+
+  // Get location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocationStatus('granted');
+          setUserCoords({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        () => {
+          setLocationStatus('denied');
+        }
+      );
+    }
+  }, []);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     reset,
+    trigger,
+    getValues,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
+    mode: "onChange",
   });
 
   const mutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      // Get user's location if available
-      let latitude: number | undefined;
-      let longitude: number | undefined;
-      
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-        });
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
-      } catch {
-        console.log("Location not available");
-      }
-
       const registrationData: StoreRegistration = {
         owner_name: data.owner_name,
         store_name: data.store_name,
@@ -77,8 +86,8 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
         city: data.city,
         pincode: data.pincode,
         pan_number: data.pan_number || undefined,
-        latitude,
-        longitude,
+        latitude: userCoords?.lat,
+        longitude: userCoords?.lng,
       };
 
       return registerStore(registrationData);
@@ -86,6 +95,10 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       setShowSuccess(true);
+      toast({
+        title: "Registration Successful!",
+        description: "Your store has been registered and is now visible to nearby sellers.",
+      });
       reset();
       setStep(1);
       setTimeout(() => {
@@ -97,7 +110,7 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
     onError: (error) => {
       toast({
         title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Something went wrong",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     },
@@ -107,8 +120,30 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
     mutation.mutate(data);
   };
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, 3));
+  const validateAndNextStep = async () => {
+    let fieldsToValidate: (keyof RegistrationFormData)[] = [];
+    
+    if (step === 1) {
+      fieldsToValidate = ['owner_name', 'aadhaar_number'];
+    } else if (step === 2) {
+      fieldsToValidate = ['phone_number', 'email'];
+    }
+    
+    const isStepValid = await trigger(fieldsToValidate);
+    if (isStepValid) {
+      setStep((s) => Math.min(s + 1, 3));
+    }
+  };
+
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStep(1);
+      setShowSuccess(false);
+    }
+  }, [open]);
 
   if (showSuccess) {
     return (
@@ -178,9 +213,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   id="owner_name"
                   placeholder="Enter your full name"
                   {...register("owner_name")}
+                  className={errors.owner_name ? "border-destructive" : ""}
                 />
                 {errors.owner_name && (
-                  <p className="text-xs text-destructive">{errors.owner_name.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.owner_name.message}
+                  </p>
                 )}
               </div>
 
@@ -191,9 +230,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   placeholder="12-digit Aadhaar number"
                   maxLength={12}
                   {...register("aadhaar_number")}
+                  className={errors.aadhaar_number ? "border-destructive" : ""}
                 />
                 {errors.aadhaar_number && (
-                  <p className="text-xs text-destructive">{errors.aadhaar_number.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.aadhaar_number.message}
+                  </p>
                 )}
               </div>
 
@@ -207,7 +250,10 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   {...register("pan_number")}
                 />
                 {errors.pan_number && (
-                  <p className="text-xs text-destructive">{errors.pan_number.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.pan_number.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -228,9 +274,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   placeholder="10-digit mobile number"
                   maxLength={10}
                   {...register("phone_number")}
+                  className={errors.phone_number ? "border-destructive" : ""}
                 />
                 {errors.phone_number && (
-                  <p className="text-xs text-destructive">{errors.phone_number.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.phone_number.message}
+                  </p>
                 )}
               </div>
 
@@ -241,9 +291,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   type="email"
                   placeholder="your@email.com"
                   {...register("email")}
+                  className={errors.email ? "border-destructive" : ""}
                 />
                 {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -263,9 +317,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   id="store_name"
                   placeholder="Your store name"
                   {...register("store_name")}
+                  className={errors.store_name ? "border-destructive" : ""}
                 />
                 {errors.store_name && (
-                  <p className="text-xs text-destructive">{errors.store_name.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.store_name.message}
+                  </p>
                 )}
               </div>
 
@@ -275,9 +333,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                   id="address"
                   placeholder="Full store address"
                   {...register("address")}
+                  className={errors.address ? "border-destructive" : ""}
                 />
                 {errors.address && (
-                  <p className="text-xs text-destructive">{errors.address.message}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.address.message}
+                  </p>
                 )}
               </div>
 
@@ -288,9 +350,13 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                     id="city"
                     placeholder="City"
                     {...register("city")}
+                    className={errors.city ? "border-destructive" : ""}
                   />
                   {errors.city && (
-                    <p className="text-xs text-destructive">{errors.city.message}</p>
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.city.message}
+                    </p>
                   )}
                 </div>
 
@@ -301,19 +367,57 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
                     placeholder="6-digit pincode"
                     maxLength={6}
                     {...register("pincode")}
+                    className={errors.pincode ? "border-destructive" : ""}
                   />
                   {errors.pincode && (
-                    <p className="text-xs text-destructive">{errors.pincode.message}</p>
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.pincode.message}
+                    </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
-                <MapPin className="h-4 w-4 text-primary mt-0.5" />
-                <p className="text-xs text-muted-foreground">
-                  We'll automatically detect your location to show your store to nearby retailers.
-                </p>
+              {/* Location Status */}
+              <div className={`flex items-start gap-2 p-3 rounded-lg border ${
+                locationStatus === 'granted' 
+                  ? 'bg-accent/5 border-accent/20' 
+                  : locationStatus === 'denied'
+                    ? 'bg-chart-4/5 border-chart-4/20'
+                    : 'bg-primary/5 border-primary/10'
+              }`}>
+                <MapPin className={`h-4 w-4 mt-0.5 ${
+                  locationStatus === 'granted' 
+                    ? 'text-accent' 
+                    : locationStatus === 'denied'
+                      ? 'text-chart-4'
+                      : 'text-primary'
+                }`} />
+                <div>
+                  <p className="text-xs font-medium text-foreground">
+                    {locationStatus === 'granted' && 'Location detected successfully!'}
+                    {locationStatus === 'denied' && 'Location access denied'}
+                    {locationStatus === 'pending' && 'Detecting your location...'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {locationStatus === 'granted' && `Coordinates: ${userCoords?.lat.toFixed(4)}, ${userCoords?.lng.toFixed(4)}`}
+                    {locationStatus === 'denied' && 'Store will be registered without precise location.'}
+                    {locationStatus === 'pending' && 'Please allow location access for better visibility.'}
+                  </p>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Show all errors summary on step 3 */}
+          {step === 3 && Object.keys(errors).length > 0 && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-destructive font-medium mb-1">Please fix the following errors:</p>
+              <ul className="text-xs text-destructive list-disc list-inside">
+                {Object.entries(errors).map(([key, error]) => (
+                  <li key={key}>{error?.message}</li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -328,11 +432,15 @@ const StoreRegistrationForm = ({ open, onOpenChange, onSuccess }: StoreRegistrat
             )}
 
             {step < 3 ? (
-              <Button type="button" onClick={nextStep} variant="gradient">
+              <Button type="button" onClick={validateAndNextStep} variant="gradient">
                 Next Step
               </Button>
             ) : (
-              <Button type="submit" variant="hero" disabled={mutation.isPending}>
+              <Button 
+                type="submit" 
+                variant="hero" 
+                disabled={mutation.isPending}
+              >
                 {mutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

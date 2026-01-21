@@ -19,20 +19,29 @@ const StoreMap = () => {
     queryFn: fetchStores,
   });
 
-  // Get user's location
+  const [locationCity, setLocationCity] = useState<string>("Detecting...");
+
+  // Get user's location with high accuracy
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      const watchId = navigator.geolocation.watchPosition(
         (position) => {
           setUserLocation([position.coords.latitude, position.coords.longitude]);
+          // Reverse geocode to get city name (simplified)
+          setLocationCity(`${position.coords.latitude.toFixed(4)}°N, ${position.coords.longitude.toFixed(4)}°E`);
         },
         () => {
           // Default to Mumbai if geolocation fails
           setUserLocation([19.076, 72.8777]);
-        }
+          setLocationCity("Mumbai (default)");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
+      
+      return () => navigator.geolocation.clearWatch(watchId);
     } else {
       setUserLocation([19.076, 72.8777]);
+      setLocationCity("Mumbai (default)");
     }
   }, []);
 
@@ -102,12 +111,16 @@ const StoreMap = () => {
         {/* Center crosshair for user location */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-primary animate-ping absolute inset-0 opacity-25" />
-            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center shadow-elevated relative">
-              <Navigation className="h-4 w-4 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-full bg-primary animate-ping absolute inset-0 opacity-25" />
+            <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center shadow-elevated relative border-2 border-card">
+              <Navigation className="h-5 w-5 text-primary-foreground" />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-2 -ml-4 whitespace-nowrap">Your Location</p>
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
+            <p className="text-xs font-medium text-foreground bg-card px-2 py-1 rounded-lg shadow-card">
+              📍 {locationCity}
+            </p>
+          </div>
         </div>
 
         {/* Store markers positioned around the center */}

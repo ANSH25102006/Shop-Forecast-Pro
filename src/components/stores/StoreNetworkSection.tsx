@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Store, MapPin, Users, Plus, Map, List } from "lucide-react";
+import { Store, MapPin, Users, Map, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import StoreRegistrationForm from "./StoreRegistrationForm";
 import NearbyStoresList from "./NearbyStoresList";
 import StoreMap from "./StoreMap";
 
 const StoreNetworkSection = () => {
-  const [showRegistration, setShowRegistration] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
 
   return (
@@ -24,30 +22,24 @@ const StoreNetworkSection = () => {
             </p>
           </div>
           
-          <div className="flex gap-3">
-            <div className="flex rounded-lg border border-border/50 overflow-hidden">
-              <Button
-                variant={viewMode === "map" ? "default" : "ghost"}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setViewMode("map")}
-              >
-                <Map className="h-4 w-4 mr-2" />
-                Map
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4 mr-2" />
-                List
-              </Button>
-            </div>
-            <Button variant="hero" size="lg" onClick={() => setShowRegistration(true)}>
-              <Plus className="h-5 w-5" />
-              Register Your Store
+          <div className="flex rounded-lg border border-border/50 overflow-hidden">
+            <Button
+              variant={viewMode === "map" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("map")}
+            >
+              <Map className="h-4 w-4 mr-2" />
+              Map
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4 mr-2" />
+              List
             </Button>
           </div>
         </div>
@@ -99,9 +91,6 @@ const StoreNetworkSection = () => {
           {viewMode === "map" ? <StoreMap /> : <NearbyStoresList />}
         </div>
       </div>
-
-      {/* Registration Modal */}
-      <StoreRegistrationForm open={showRegistration} onOpenChange={setShowRegistration} />
     </section>
   );
 };
