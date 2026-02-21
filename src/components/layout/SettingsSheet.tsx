@@ -1,4 +1,4 @@
-import { Settings, Moon, Sun, Monitor, User, Bell, Shield, HelpCircle, LogOut } from "lucide-react";
+import { Settings, Sun, Bell, Shield, HelpCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,8 +12,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { User } from "lucide-react";
 
 const SettingsSheet = () => {
+  const { user, displayName, role, signOut } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     darkMode: false,
     notifications: true,
@@ -23,7 +28,22 @@ const SettingsSheet = () => {
   });
 
   const updateSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    if (key === "darkMode") {
+      const next = !settings.darkMode;
+      document.documentElement.classList.toggle("dark", next);
+      setSettings(prev => ({ ...prev, darkMode: next }));
+    } else {
+      setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    }
+  };
+
+  const initials = displayName
+    ? displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() || "U";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
   return (
@@ -43,7 +63,7 @@ const SettingsSheet = () => {
             Manage your account and preferences
           </SheetDescription>
         </SheetHeader>
-        
+
         <div className="mt-6 space-y-6">
           {/* Profile Section */}
           <div>
@@ -53,12 +73,12 @@ const SettingsSheet = () => {
             </h4>
             <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
               <div className="h-14 w-14 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                JD
+                {initials}
               </div>
               <div>
-                <p className="font-semibold text-foreground">John Doe</p>
-                <p className="text-sm text-muted-foreground">john@example.com</p>
-                <p className="text-xs text-muted-foreground">Store Owner</p>
+                <p className="font-semibold text-foreground">{displayName || "User"}</p>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <p className="text-xs text-muted-foreground capitalize">{role || "owner"}</p>
               </div>
             </div>
           </div>
@@ -71,18 +91,16 @@ const SettingsSheet = () => {
               <Sun className="h-4 w-4" />
               Appearance
             </h4>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="dark-mode" className="text-foreground">Dark Mode</Label>
-                  <p className="text-xs text-muted-foreground">Switch to dark theme</p>
-                </div>
-                <Switch 
-                  id="dark-mode" 
-                  checked={settings.darkMode}
-                  onCheckedChange={() => updateSetting('darkMode')}
-                />
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="dark-mode" className="text-foreground">Dark Mode</Label>
+                <p className="text-xs text-muted-foreground">Switch to dark theme</p>
               </div>
+              <Switch
+                id="dark-mode"
+                checked={settings.darkMode}
+                onCheckedChange={() => updateSetting("darkMode")}
+              />
             </div>
           </div>
 
@@ -95,50 +113,24 @@ const SettingsSheet = () => {
               Notifications
             </h4>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="push-notifs" className="text-foreground">Push Notifications</Label>
-                  <p className="text-xs text-muted-foreground">Receive browser notifications</p>
+              {[
+                { id: "notifications", label: "Push Notifications", desc: "Receive browser notifications" },
+                { id: "emailAlerts", label: "Email Alerts", desc: "Daily summary emails" },
+                { id: "stockAlerts", label: "Stock Alerts", desc: "Low inventory warnings" },
+                { id: "forecastUpdates", label: "Forecast Updates", desc: "New prediction notifications" },
+              ].map((item) => (
+                <div key={item.id} className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor={item.id} className="text-foreground">{item.label}</Label>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                  <Switch
+                    id={item.id}
+                    checked={settings[item.id as keyof typeof settings]}
+                    onCheckedChange={() => updateSetting(item.id as keyof typeof settings)}
+                  />
                 </div>
-                <Switch 
-                  id="push-notifs" 
-                  checked={settings.notifications}
-                  onCheckedChange={() => updateSetting('notifications')}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="email-alerts" className="text-foreground">Email Alerts</Label>
-                  <p className="text-xs text-muted-foreground">Daily summary emails</p>
-                </div>
-                <Switch 
-                  id="email-alerts" 
-                  checked={settings.emailAlerts}
-                  onCheckedChange={() => updateSetting('emailAlerts')}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="stock-alerts" className="text-foreground">Stock Alerts</Label>
-                  <p className="text-xs text-muted-foreground">Low inventory warnings</p>
-                </div>
-                <Switch 
-                  id="stock-alerts" 
-                  checked={settings.stockAlerts}
-                  onCheckedChange={() => updateSetting('stockAlerts')}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="forecast-updates" className="text-foreground">Forecast Updates</Label>
-                  <p className="text-xs text-muted-foreground">New prediction notifications</p>
-                </div>
-                <Switch 
-                  id="forecast-updates" 
-                  checked={settings.forecastUpdates}
-                  onCheckedChange={() => updateSetting('forecastUpdates')}
-                />
-              </div>
+              ))}
             </div>
           </div>
 
@@ -154,7 +146,11 @@ const SettingsSheet = () => {
               <HelpCircle className="h-4 w-4" />
               Help & Support
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:text-destructive">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+              onClick={handleSignOut}
+            >
               <LogOut className="h-4 w-4" />
               Log Out
             </Button>
