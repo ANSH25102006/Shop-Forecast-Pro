@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface Store {
   id: string;
-  user_id: string | null;
   owner_name: string;
   store_name: string;
   aadhaar_number: string;
@@ -36,18 +35,14 @@ export interface StoreRegistration {
 }
 
 export const registerStore = async (data: StoreRegistration): Promise<Store> => {
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("You must be logged in to register a store");
-
   const { data: store, error } = await supabase
     .from('stores')
-    .insert([{ ...data, user_id: user.id }])
+    .insert([data])
     .select()
     .single();
-
+  
   if (error) throw error;
-  return store as Store;
+  return store;
 };
 
 export const fetchStores = async (): Promise<Store[]> => {
@@ -55,18 +50,20 @@ export const fetchStores = async (): Promise<Store[]> => {
     .from('stores')
     .select('*')
     .order('created_at', { ascending: false });
-
+  
   if (error) throw error;
-  return (data || []) as Store[];
+  return data || [];
 };
 
 export const fetchNearbyStores = async (
-  lat: number,
-  lng: number,
+  lat: number, 
+  lng: number, 
   radiusKm: number = 5
 ): Promise<Store[]> => {
+  // For now, fetch all stores and filter client-side
+  // In production, you'd use PostGIS for proper geospatial queries
   const stores = await fetchStores();
-
+  
   return stores.filter(store => {
     if (!store.latitude || !store.longitude) return false;
     const distance = calculateDistance(lat, lng, store.latitude, store.longitude);
@@ -74,18 +71,19 @@ export const fetchNearbyStores = async (
   });
 };
 
+// Haversine formula to calculate distance between two points
 const calculateDistance = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
+  lat1: number, 
+  lon1: number, 
+  lat2: number, 
   lon2: number
 ): number => {
-  const R = 6371;
+  const R = 6371; // Earth's radius in km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a =
+  const a = 
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
