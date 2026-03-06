@@ -5,6 +5,7 @@ import SalesChart from "@/components/dashboard/SalesChart";
 import ProductTable from "@/components/dashboard/ProductTable";
 import InsightCard from "@/components/dashboard/InsightCard";
 import QuickActions from "@/components/dashboard/QuickActions";
+import DailyRecordUpload from "@/components/dashboard/DailyRecordUpload";
 import StoreNetworkSection from "@/components/stores/StoreNetworkSection";
 
 const Dashboard = () => {
@@ -78,8 +79,13 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Product Table */}
+        {/* Daily Material Records */}
         <div className="animate-fade-in mb-8" style={{ animationDelay: "0.45s" }}>
+          <DailyRecordUpload />
+        </div>
+
+        {/* Product Table */}
+        <div className="animate-fade-in mb-8" style={{ animationDelay: "0.5s" }}>
           <ProductTable />
         </div>
 
