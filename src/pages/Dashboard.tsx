@@ -79,8 +79,13 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Product Table */}
+        {/* Daily Material Records */}
         <div className="animate-fade-in mb-8" style={{ animationDelay: "0.45s" }}>
+          <DailyRecordUpload />
+        </div>
+
+        {/* Product Table */}
+        <div className="animate-fade-in mb-8" style={{ animationDelay: "0.5s" }}>
           <ProductTable />
         </div>
 
