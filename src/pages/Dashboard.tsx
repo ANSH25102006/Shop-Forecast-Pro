@@ -5,6 +5,7 @@ import SalesChart from "@/components/dashboard/SalesChart";
 import ProductTable from "@/components/dashboard/ProductTable";
 import InsightCard from "@/components/dashboard/InsightCard";
 import QuickActions from "@/components/dashboard/QuickActions";
+import DailyRecordUpload from "@/components/dashboard/DailyRecordUpload";
 import StoreNetworkSection from "@/components/stores/StoreNetworkSection";
 
 const Dashboard = () => {
