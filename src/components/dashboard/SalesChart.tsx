@@ -1,13 +1,5 @@
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend 
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const salesData = [
   { month: "Jan", actual: 4200, predicted: 4100 },
@@ -28,14 +20,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p className="font-medium text-foreground mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
-            <div 
-              className="h-2 w-2 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
+            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-muted-foreground">{entry.name}:</span>
-            <span className="font-medium text-foreground">
-              ${entry.value?.toLocaleString() || "—"}
-            </span>
+            <span className="font-medium text-foreground">${entry.value?.toLocaleString() || "—"}</span>
           </div>
         ))}
       </div>
@@ -45,11 +32,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const SalesChart = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="rounded-xl bg-card p-6 shadow-card border border-border/50">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-foreground">Sales & Demand Forecast</h3>
-        <p className="text-sm text-muted-foreground">Historical data with ML-powered predictions</p>
+        <h3 className="text-lg font-semibold text-foreground">{t("chart.title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("chart.subtitle")}</p>
       </div>
       
       <div className="h-[320px]">
@@ -66,41 +55,12 @@ const SalesChart = () => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" vertical={false} />
-            <XAxis 
-              dataKey="month" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
-              tickFormatter={(value) => `$${value / 1000}k`}
-            />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} tickFormatter={(value) => `$${value / 1000}k`} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              wrapperStyle={{ paddingTop: '20px' }}
-              formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
-            />
-            <Area
-              type="monotone"
-              dataKey="actual"
-              name="Actual Sales"
-              stroke="hsl(221, 83%, 53%)"
-              strokeWidth={2}
-              fill="url(#actualGradient)"
-              connectNulls={false}
-            />
-            <Area
-              type="monotone"
-              dataKey="predicted"
-              name="Predicted Demand"
-              stroke="hsl(199, 89%, 48%)"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              fill="url(#predictedGradient)"
-            />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>} />
+            <Area type="monotone" dataKey="actual" name={t("chart.actualSales")} stroke="hsl(221, 83%, 53%)" strokeWidth={2} fill="url(#actualGradient)" connectNulls={false} />
+            <Area type="monotone" dataKey="predicted" name={t("chart.predictedDemand")} stroke="hsl(199, 89%, 48%)" strokeWidth={2} strokeDasharray="5 5" fill="url(#predictedGradient)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
