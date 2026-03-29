@@ -9,12 +9,25 @@ import { useLanguage, languageNames, type Language } from "@/contexts/LanguageCo
 
 const SettingsSheet = () => {
   const { t, language, setLanguage } = useLanguage();
-  const [settings, setSettings] = useState({
-    darkMode: false, notifications: true, emailAlerts: true, stockAlerts: true, forecastUpdates: true,
-  });
+  const [settings, setSettings] = useState(() => ({
+    darkMode: document.documentElement.classList.contains('dark'),
+    notifications: true, emailAlerts: true, stockAlerts: true, forecastUpdates: true,
+  }));
 
   const updateSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    setSettings(prev => {
+      const newSettings = { ...prev, [key]: !prev[key] };
+      if (key === 'darkMode') {
+        if (newSettings.darkMode) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        }
+      }
+      return newSettings;
+    });
   };
 
   const languages = Object.entries(languageNames) as [Language, { label: string; flag: string }][];
