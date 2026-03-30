@@ -1,10 +1,14 @@
-import { Package, TrendingUp, AlertTriangle, DollarSign } from "lucide-react";
 import Header from "@/components/layout/Header";
-import MetricCard from "@/components/dashboard/MetricCard";
-import SalesChart from "@/components/dashboard/SalesChart";
-import InsightCard from "@/components/dashboard/InsightCard";
 import DailyRecordUpload from "@/components/dashboard/DailyRecordUpload";
+import AdvancedKPICards from "@/components/dashboard/AdvancedKPICards";
+import SmartInsights from "@/components/dashboard/SmartInsights";
+import AdvancedCharts from "@/components/dashboard/AdvancedCharts";
+import InventoryAlerts from "@/components/dashboard/InventoryAlerts";
+import ExpenseTracker from "@/components/dashboard/ExpenseTracker";
+import SmartForecastCard from "@/components/dashboard/SmartForecastCard";
 import StoreNetworkSection from "@/components/stores/StoreNetworkSection";
+import FloatingAddSale from "@/components/dashboard/FloatingAddSale";
+import AIChatbot from "@/components/dashboard/AIChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Dashboard = () => {
@@ -20,34 +24,43 @@ const Dashboard = () => {
           <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
         </div>
         
+        {/* Daily Records */}
         <div className="animate-fade-in mb-8" style={{ animationDelay: "0.1s" }}>
           <DailyRecordUpload />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="animate-fade-in" style={{ animationDelay: "0.15s" }}>
-            <MetricCard title={t("dashboard.totalProducts")} value="248" change="+12" changeType="positive" icon={Package} description={t("dashboard.activeItems")} />
-          </div>
+        {/* KPI Cards */}
+        <div className="mb-8">
+          <AdvancedKPICards />
+        </div>
+
+        {/* Smart Forecast + Inventory Alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <MetricCard title={t("dashboard.monthlySales")} value="₹62,400" change="+18.2%" changeType="positive" icon={DollarSign} description={t("dashboard.revenueMonth")} />
+            <SmartForecastCard />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "0.25s" }}>
-            <MetricCard title={t("dashboard.forecastAccuracy")} value="94.2%" change="+2.1%" changeType="positive" icon={TrendingUp} description={t("dashboard.mlPerformance")} />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <MetricCard title={t("dashboard.lowStockAlerts")} value="6" change="-3" changeType="positive" icon={AlertTriangle} description={t("dashboard.needsRestocking")} />
+            <InventoryAlerts />
           </div>
         </div>
 
+        {/* Smart Insights with Decision Support */}
+        <div className="animate-fade-in mb-8" style={{ animationDelay: "0.3s" }}>
+          <SmartInsights />
+        </div>
+
+        {/* Advanced Charts */}
         <div className="animate-fade-in mb-8" style={{ animationDelay: "0.35s" }}>
-          <InsightCard />
-        </div>
-        
-        <div className="animate-fade-in mb-8" style={{ animationDelay: "0.4s" }}>
-          <SalesChart />
+          <AdvancedCharts />
         </div>
 
-        <div className="animate-fade-in" style={{ animationDelay: "0.55s" }}>
+        {/* Expense Tracker */}
+        <div className="animate-fade-in mb-8" style={{ animationDelay: "0.4s" }}>
+          <ExpenseTracker />
+        </div>
+
+        {/* Store Network */}
+        <div className="animate-fade-in" style={{ animationDelay: "0.45s" }}>
           <StoreNetworkSection />
         </div>
       </main>
@@ -58,6 +71,10 @@ const Dashboard = () => {
           <p className="text-xs mt-1">{t("footer.powered")}</p>
         </div>
       </footer>
+
+      {/* Floating Actions */}
+      <FloatingAddSale />
+      <AIChatbot />
     </div>
   );
 };
