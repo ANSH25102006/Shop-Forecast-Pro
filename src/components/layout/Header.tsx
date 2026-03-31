@@ -23,6 +23,7 @@ const Header = ({ activeTab }: HeaderProps) => {
     { label: t("nav.products"), key: "products", path: "/products" },
     { label: t("nav.forecasts"), key: "forecasts", path: "/forecasts" },
     { label: t("nav.reports"), key: "reports", path: "/reports" },
+    { label: t("nav.simulation"), key: "simulation", path: "/simulation" },
   ];
 
   return (
