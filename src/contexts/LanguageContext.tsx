@@ -1227,6 +1227,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.products": "उत्पादने",
     "nav.forecasts": "अंदाज",
     "nav.reports": "अहवाल",
+    "nav.simulation": "सिम्युलेशन",
     "app.name": "ForecastPro",
     "app.tagline": "किरकोळ मागणी बुद्धिमत्ता",
     "dashboard.title": "डॅशबोर्ड",
