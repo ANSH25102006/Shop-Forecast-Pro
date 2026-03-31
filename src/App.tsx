@@ -11,6 +11,7 @@ import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
 import SellerRegistration from "./pages/SellerRegistration";
 import NotFound from "./pages/NotFound";
+import Simulation from "./pages/Simulation";
 
 const queryClient = new QueryClient();
 
