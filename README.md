@@ -176,3 +176,75 @@ Future Improvements
 5.) Improved testing coverage
 <br>
 6.) Integration with external APIs and services
+
+---
+
+## OpenEnv Integration
+
+OpenEnv is a standalone Python reinforcement-learning environment that simulates shop management decisions. It runs independently via CLI and does **not** affect the frontend.
+
+### Structure
+
+```
+openenv/
+├── __init__.py        # Package entry point
+├── models.py          # State & Action dataclasses
+├── shop_env.py        # ShopEnv environment (reset / step / get_state)
+├── tasks.py           # 3 task definitions with grader functions
+└── baseline.py        # Rule-based baseline agent
+run_openenv.py         # CLI runner script
+openenv.yaml           # Environment specification
+```
+
+### State Space
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `time_step` | int | Current day (0-indexed) |
+| `products[].stock` | int | Current inventory |
+| `products[].daily_demand_mean` | float | Average daily demand |
+| `products[].demand_trend` | float | Demand growth rate |
+| `cumulative_revenue` | float | Total revenue so far |
+| `cumulative_cost` | float | Total costs so far |
+
+### Action Space
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `price_multipliers` | list[float] | Per-product price scaling (1.0 = no change) |
+| `restock_amounts` | list[int] | Units to order per product |
+| `discount_rates` | list[float] | Discount fraction (0.0–1.0) |
+| `demand_forecasts` | list[float] | Predicted demand (used for scoring) |
+
+### Reward
+
+Continuous per-step reward:
+- **+** daily profit (revenue − restock cost)
+- **−** 50 × stockout events
+- **−** 0.5 × excess overstock units
+- **+** 10 × cumulative forecast accuracy
+
+### Tasks
+
+| Difficulty | Task | Days | Metric |
+|------------|------|------|--------|
+| Easy | Predict next-day sales | 7 | Forecast accuracy (0–1) |
+| Medium | Optimise inventory | 7 | Stockout + overstock score (0–1) |
+| Hard | Maximise profit | 30 | Normalised profit (0–1) |
+
+### How to Run
+
+```bash
+# Run all tasks with the baseline agent
+python3 run_openenv.py
+
+# Run a specific task
+python3 run_openenv.py easy
+python3 run_openenv.py hard
+```
+
+### Integration Hooks
+
+- Product catalogue in `shop_env.py` mirrors the frontend mock data
+- Demand trends and forecast logic align with `SmartForecastCard.tsx`
+- No frontend files are modified; OpenEnv is fully isolated
