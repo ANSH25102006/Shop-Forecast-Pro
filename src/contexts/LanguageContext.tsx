@@ -1601,6 +1601,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.products": "ઉત્પાદનો",
     "nav.forecasts": "આગાહીઓ",
     "nav.reports": "અહેવાલો",
+    "nav.simulation": "સિમ્યુલેશન",
     "app.name": "ForecastPro",
     "app.tagline": "છૂટક માંગ બુદ્ધિમત્તા",
     "dashboard.title": "ડેશબોર્ડ",
