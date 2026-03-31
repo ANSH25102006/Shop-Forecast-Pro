@@ -853,6 +853,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.products": "ఉత్పత్తులు",
     "nav.forecasts": "అంచనాలు",
     "nav.reports": "నివేదికలు",
+    "nav.simulation": "అనుకరణ",
     "app.name": "ForecastPro",
     "app.tagline": "రిటైల్ డిమాండ్ ఇంటెలిజెన్స్",
     "dashboard.title": "డాష్‌బోర్డ్",
