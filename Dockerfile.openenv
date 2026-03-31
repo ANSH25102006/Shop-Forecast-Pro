@@ -1,0 +1,9 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY openenv/ ./openenv/
+COPY run_openenv.py .
+COPY openenv.yaml .
+
+CMD ["python", "run_openenv.py"]
