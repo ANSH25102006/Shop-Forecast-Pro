@@ -11,6 +11,7 @@ import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
 import SellerRegistration from "./pages/SellerRegistration";
 import NotFound from "./pages/NotFound";
+import Simulation from "./pages/Simulation";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/forecasts" element={<Forecasts />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/registration" element={<SellerRegistration />} />
+            <Route path="/simulation" element={<Simulation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
