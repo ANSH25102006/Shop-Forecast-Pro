@@ -1,0 +1,50 @@
+environment:
+  name: ShopEnv
+  description: >
+    A reinforcement-learning style environment simulating a small retail shop.
+    The agent makes daily pricing, restocking, and discount decisions.
+
+state_space:
+  time_step: "Current day (0-indexed)"
+  total_days: "Episode length"
+  products:
+    - name: string
+    - price: float
+    - cost: float
+    - stock: int
+    - daily_demand_mean: float
+    - demand_trend: float
+  cumulative_revenue: float
+  cumulative_cost: float
+  cumulative_stockout_days: int
+  cumulative_overstock_units: int
+  forecast_errors: "list[float]"
+
+action_space:
+  price_multipliers: "list[float] – per-product price scaling (1.0 = unchanged)"
+  restock_amounts: "list[int] – units to order per product"
+  discount_rates: "list[float] – 0.0–1.0 discount fraction per product"
+  demand_forecasts: "list[float] – predicted demand per product (used for scoring)"
+
+reward:
+  description: >
+    Continuous per-step reward combining:
+      +  daily profit (revenue − restock cost)
+      −  50 × number of products that stocked out
+      −  0.5 × excess overstock units
+      + 10 × cumulative forecast accuracy
+  range: "Unbounded (typically −200 to +3000 per step)"
+
+tasks:
+  easy:
+    name: Predict Next-Day Sales
+    days: 7
+    metric: Forecast accuracy (0.0–1.0)
+  medium:
+    name: Optimise Inventory (7 days)
+    days: 7
+    metric: Combined stockout + overstock score (0.0–1.0)
+  hard:
+    name: Maximise Profit (30 days)
+    days: 30
+    metric: Normalised profit (0.0–1.0)
